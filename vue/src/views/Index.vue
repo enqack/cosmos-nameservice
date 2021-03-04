@@ -5,6 +5,7 @@
       <sp-bank-balances />
       <sp-token-send />
       <!-- this line is used by starport scaffolding # 4 -->
+		<sp-type-form path="enqack.nameservice.nameservice" type="whois" :fields="[ ['creator', 1, 'string'] , ['name', 2, 'string'] , ['address', 3, 'string'] , ['price', 4, 'string'] ]" />
     </div>
   </div>
 </template>

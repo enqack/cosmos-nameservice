@@ -16,6 +16,15 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 
 		switch msg := msg.(type) {
 		// this line is used by starport scaffolding # 1
+		case *types.MsgCreateWhois:
+			return handleMsgCreateWhois(ctx, k, msg)
+
+		case *types.MsgUpdateWhois:
+			return handleMsgUpdateWhois(ctx, k, msg)
+
+		case *types.MsgDeleteWhois:
+			return handleMsgDeleteWhois(ctx, k, msg)
+
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", types.ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
