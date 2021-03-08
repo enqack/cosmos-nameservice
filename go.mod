@@ -3,6 +3,7 @@ module github.com/enqack/nameservice
 go 1.15
 
 require (
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/cosmos/cosmos-sdk v0.41.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.4.3

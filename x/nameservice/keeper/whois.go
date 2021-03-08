@@ -1,11 +1,19 @@
 package keeper
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	validator "github.com/asaskevich/govalidator"
 
 	"github.com/enqack/nameservice/x/nameservice/types"
-	"strconv"
+)
+
+
+var (
+	whoisTDL = [...]string{"wallet", "contract", "validator"}
 )
 
 // GetWhoisCount get the total number of whois
@@ -106,6 +114,53 @@ func (k Keeper) GetAllWhois(ctx sdk.Context) (msgs []types.Whois) {
 	return
 }
 
+
+//
+// Additional methods
+//
+
+// IsNamePresent - check if name is present in the store or not
+func (k Keeper) IsNamePresent(ctx sdk.Context, name string) bool {
+	for _, whois := range k.GetAllWhois(ctx) {
+		if whois.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+// VerifyNameFormat - check if name is a valid format
+func (k Keeper) VerifyNameFormat(ctx sdk.Context, name string) bool {
+	// name is invalid if it does not conform to a DNS name
+	if !validator.IsDNSName(name) {
+		return false
+	}
+	// check if part after last period is a top level domain
+	score := 0 // 0 equals no TLD found
+	nameParts := strings.Split(name, ".")
+	for _, tld := range whoisTDL {
+		if nameParts[len(nameParts)-1] == tld {
+			score++
+		}
+	}
+	if score == 0 {
+		return false
+	}
+	return true
+}
+
+// IsAddress - check if address is a valid format
+func (k Keeper) IsValidAddress(ctx sdk.Context, address string) bool {
+	addr, err := sdk.AccAddressFromBech32(address)
+	if err != nil {
+		return false
+	}
+	if err := sdk.VerifyAddressFormat(addr); err != nil {
+		return false
+	}
+	return true
+}
+
 //
 // Functions used by querier
 //
@@ -131,7 +186,14 @@ func (k Keeper) ResolveName(ctx sdk.Context, name string) string {
 // SetName - sets the value string that a name resolves to
 func (k Keeper) SetName(ctx sdk.Context, name string, address string) {
 	whois := k.GetWhois(ctx, name)
-	whois.Address = address
+	whois.Name = name
+	k.SetWhois(ctx, whois)
+}
+
+// SetAddress - sets the address string that a name resolves to
+func (k Keeper) SetAddress(ctx sdk.Context, name string, address string) {
+	whois := k.GetWhois(ctx, name)
+	whois.Address =  address
 	k.SetWhois(ctx, whois)
 }
 
@@ -159,12 +221,6 @@ func (k Keeper) SetPrice(ctx sdk.Context, name string, price string) {
 	whois := k.GetWhois(ctx, name)
 	whois.Price = price
 	k.SetWhois(ctx, whois)
-}
-
-// Check if the name is present in the store or not
-func (k Keeper) IsNamePresent(ctx sdk.Context, name string) bool {
-	store := ctx.KVStore(k.storeKey)
-	return store.Has([]byte(name))
 }
 
 // Get an iterator over all names in which the keys are the names and the values are the whois

@@ -8,7 +8,20 @@ import (
 	"github.com/enqack/nameservice/x/nameservice/types"
 )
 
+
 func handleMsgCreateWhois(ctx sdk.Context, k keeper.Keeper, msg *types.MsgCreateWhois) (*sdk.Result, error) {
+	// Checks if whois name already exists
+	if k.IsNamePresent(ctx, msg.Name) {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name already exists")
+	}
+	// Checks is name is valid
+	if !k.VerifyNameFormat(ctx, msg.Name) {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "name is not valid")
+	}
+	// Checks if address is valid
+	if !k.IsValidAddress(ctx, msg.Address) {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid address")
+	}
 	k.CreateWhois(ctx, *msg)
 
 	return &sdk.Result{Events: ctx.EventManager().ABCIEvents()}, nil
@@ -50,3 +63,4 @@ func handleMsgDeleteWhois(ctx sdk.Context, k keeper.Keeper, msg *types.MsgDelete
 
 	return &sdk.Result{Events: ctx.EventManager().ABCIEvents()}, nil
 }
+
