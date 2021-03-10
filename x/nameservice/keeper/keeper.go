@@ -7,22 +7,25 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	bank "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/enqack/nameservice/x/nameservice/types"
 )
 
 type (
 	Keeper struct {
+		CoinKeeper bank.Keeper
 		cdc      codec.Marshaler
 		storeKey sdk.StoreKey
 		memKey   sdk.StoreKey
 	}
 )
 
-func NewKeeper(cdc codec.Marshaler, storeKey, memKey sdk.StoreKey) *Keeper {
+func NewKeeper(coinKeeper bank.Keeper, cdc codec.Marshaler, storeKey, memKey sdk.StoreKey) *Keeper {
 	return &Keeper{
-		cdc:      cdc,
-		storeKey: storeKey,
-		memKey:   memKey,
+		CoinKeeper: coinKeeper,
+		cdc:        cdc,
+		storeKey:   storeKey,
+		memKey:     memKey,
 	}
 }
 
