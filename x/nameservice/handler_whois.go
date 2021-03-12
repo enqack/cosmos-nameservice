@@ -10,12 +10,6 @@ import (
 	"github.com/enqack/nameservice/x/nameservice/types"
 )
 
-var (
-	minimumCreateWhoisPrice, _ = types.CoinsFromString("10trycoin")
-	updateWhoisPrice, _        = types.CoinsFromString("5trycoin")
-	deleteWhoisPrice, _        = types.CoinsFromString("1trycoin")
-)
-
 func handleMsgCreateWhois(ctx sdk.Context, k keeper.Keeper, msg *types.MsgCreateWhois) (*sdk.Result, error) {
 	// Check if whois name already exists
 	if k.IsNamePresent(ctx, msg.Name) {
@@ -38,19 +32,14 @@ func handleMsgCreateWhois(ctx sdk.Context, k keeper.Keeper, msg *types.MsgCreate
 		return nil, err
 	}
 
-	// Convert price (type string) to sdk.Coins type
-	price, err := types.CoinsFromString(msg.Price)
+	// Get create-whois price
+	createWhoisPrice, err := types.CoinsFromString(k.CreateWhoisPrice(ctx))
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if price is above minimum
-	if minimumCreateWhoisPrice.IsAllGT(price) {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "price below minimum")
-	}
-
 	// Deduct coins from creator's account
-	err = k.CoinKeeper.SubtractCoins(ctx, creator, price)
+	err = k.CoinKeeper.SubtractCoins(ctx, creator, createWhoisPrice)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +89,13 @@ func handleMsgUpdateWhois(ctx sdk.Context, k keeper.Keeper, msg *types.MsgUpdate
 		return nil, err
 	}
 
-	// Dedeuct coins from owner's account
+	// Get update-whois price
+	updateWhoisPrice, err := types.CoinsFromString(k.UpdateWhoisPrice(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	// Deduct coins from owner's account
 	err = k.CoinKeeper.SubtractCoins(ctx, creator, updateWhoisPrice)
 	if err != nil {
 		return nil, err
@@ -128,7 +123,13 @@ func handleMsgDeleteWhois(ctx sdk.Context, k keeper.Keeper, msg *types.MsgDelete
 		return nil, err
 	}
 
-	// Dedeuct coins from owner's account
+	// Get delete-whois price
+	deleteWhoisPrice, err := types.CoinsFromString(k.DeleteWhoisPrice(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	// Deduct coins from owner's account
 	err = k.CoinKeeper.SubtractCoins(ctx, creator, deleteWhoisPrice)
 	if err != nil {
 		return nil, err

@@ -9,6 +9,8 @@ import (
 // InitGenesis initializes the capability module's state from a provided genesis
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
+	k.SetParams(ctx, types.DefaultParams())
+
 	// this line is used by starport scaffolding # genesis/module/init
 	// Set all the whois
 	for _, elem := range genState.WhoisList {
